@@ -1,5 +1,12 @@
 angular.module('angularSmartHttpDemo', ['ngSmartHttp'])
   .controller('DemoCtrl', function($scope, SmartHttp) {
-    $scope.waou = SmartHttp.getTest('http://bnp-ip-onecms-api-integration.bearstech.com/translation/locale/fr_FR');
-    console.log($scope.waou);
+    SmartHttp.get('http://bnp-ip-onecms-api-integration.bearstech.com/translation/locale/fr_FR')
+    .then(function(data) {
+      $scope.data = data;
+      console.log(data);
+      return SmartHttp.get('http://bnp-ip-onecms-api-integration.bearstech.com/translation/locale/fr_FR')
+    })
+    .then(function(data) {
+      console.log(data);
+    });
   });
