@@ -3,27 +3,31 @@ const Q = new WeakMap();
 
 class SmartHttp
 {
-  constructor($http, $q) {
+  constructor($http, $rootScope, $q) {
     HTTP.set(this, $http);
     Q.set(this, $q);
-    this.trads = undefined;
+    this.data = undefined;
   }
 
   get(url) {
     let deferred = Q.get(this).defer();
-    if (this.trads) {
+    var dataAvailable = this.trads;
+    if (dataAvailable) {
       deferred.resolve(this.trads);
-    } else {
-      HTTP.get(this).get(url).then((result) => {
-        this.trads = result.data;
-        deferred.resolve(result.data);
-      });
     }
+    HTTP.get(this).get(url).then((result) => {
+      this.data = result.data;
+      if (dataAvailable) {
+        $rootScope.$broadcast('dataAvailable', result.data);
+      } else {
+        deferred.resolve(result.data);
+      }
+    });
     return deferred.promise;
   }
 
-  static smartHttpFactory($http, $q) {
-    return new SmartHttp($http, $q);
+  static smartHttpFactory($http, $rootScope, $q) {
+    return new SmartHttp($http, $rootScope, $q);
   }
 }
 
