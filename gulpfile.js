@@ -178,5 +178,13 @@ gulp.task('test-browser', ['build-in-sequence'], function() {
   return gulp.watch(otherWatchFiles, ['build-in-sequence']);
 });
 
+gulp.task('demo-serve', function() {
+  gulp.src('.')
+    .pipe($.webserver({
+      livereload: true,
+      open: true
+    }));
+});
+
 // An alias of test
 gulp.task('default', ['test']);

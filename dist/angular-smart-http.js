@@ -18,14 +18,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     _createClass(SmartHttp, [{
       key: 'getTest',
-      value: function getTest() {
-        return HTTP.get(this).get('http://google.fr').then(function (result) {
+      value: function getTest(url) {
+        return HTTP.get(this).get(url).then(function (result) {
           return result.data;
         });
       }
     }], [{
-      key: 'smartHttpfactory',
-      value: function smartHttpfactory($http) {
+      key: 'smartHttpFactory',
+      value: function smartHttpFactory($http) {
         return new SmartHttp($http);
       }
     }]);
@@ -33,14 +33,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return SmartHttp;
   })();
 
-  var moduleName$1 = 'angularSmartHttp.services';
+  var moduleName$1 = 'ngSmartHttp.services';
 
-  angular.module(moduleName$1, []).factory('SmartHttp', SmartHttp);
+  angular.module(moduleName$1, []).factory('SmartHttp', SmartHttp.smartHttpFactory);
 
-  var moduleName = 'angularSmartHttp';
+  var moduleName = 'ngSmartHttp';
 
   var app = angular.module(moduleName, [moduleName$1]);
-
-  angular.bootstrap(document, [moduleName]);
 });
 //# sourceMappingURL=angular-smart-http.js.map

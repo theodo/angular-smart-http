@@ -6,11 +6,11 @@ class SmartHttp
     HTTP.set(this, $http);
   }
 
-  getTest() {
-    return HTTP.get(this).get('http://google.fr').then(result => result.data);
+  getTest(url) {
+    return HTTP.get(this).get(url).then(result => result.data);
   }
 
-  static smartHttpfactory($http) {
+  static smartHttpFactory($http) {
     return new SmartHttp($http);
   }
 }

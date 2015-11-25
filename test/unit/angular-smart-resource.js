@@ -1,4 +1,4 @@
-import angularSmartResource from '../../src/angular-smart-resource';
+import angularSmartResource from '../../src/angular-smart-http';
 
 describe('angularSmartResource', () => {
   describe('Greet function', () => {

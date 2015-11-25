@@ -1,8 +1,8 @@
 import SmartHttp from './smart-http';
 
-var moduleName = 'angularSmartHttp.services';
+var moduleName = 'ngSmartHttp.services';
 
 angular.module(moduleName, [])
-    .factory('SmartHttp', SmartHttp);
+    .factory('SmartHttp', SmartHttp.smartHttpFactory);
 
 export default moduleName;
