@@ -9,7 +9,7 @@ class Storage
     WINDOW.set(this, $window);
   }
 
-  get(k) {
+  get(key) {
     return JSON.parse(this.getString(key));
   }
 
@@ -19,8 +19,9 @@ class Storage
 
   getString(key) {
     var now = new Date();
-    var entry = JSON.parse(WINDOW.localStorage.getItem(prefix + key));
-    if (now - entry.date < expires) {
+    var entry = JSON.parse(WINDOW.get(this).localStorage.getItem(prefix + key));
+    console.log(now - new Date(entry.date));
+    if (now - new Date(entry.date) < expires) {
       return entry.value;
     } else {
       //this.remove(key);
@@ -34,7 +35,7 @@ class Storage
       date: new Date(),
       value: value
     });
-    WINDOW.localStorage.setItem(prefix + key, entry);
+    WINDOW.get(this).localStorage.setItem(prefix + key, entry);
   }
 
   static storageFactory($window) {
