@@ -1,33 +1,35 @@
 const HTTP = new WeakMap();
 const Q = new WeakMap();
+const STORAGE = new WeakMap();
 
 class SmartHttp
 {
-  constructor($http, $rootScope, $q) {
+  constructor($http, $rootScope, $q, Storage) {
     HTTP.set(this, $http);
     Q.set(this, $q);
-    this.data = undefined;
+    STORAGE.set(this, Storage);
   }
 
   get(url) {
-    let deferred = Q.get(this).defer();
-    var dataAvailable = this.trads;
-    if (dataAvailable) {
-      deferred.resolve(this.trads);
-    }
-    HTTP.get(this).get(url).then((result) => {
-      this.data = result.data;
-      if (dataAvailable) {
-        $rootScope.$broadcast('dataAvailable', result.data);
-      } else {
-        deferred.resolve(result.data);
-      }
+    var key = 'GET' + url;
+    var fromStorageSync = STORAGE.get(this).get(key);
+    var fromStorage = Q.get(this).resolve(fromStorageSync);
+    var fromRemote = HTTP.get(this).get(url).then((data) => {
+      STORAGE.get(this).set(key, data);
     });
+
+    if (fromStorageSync == null) {
+      fromStorage.$fresh = fromRemote;
+      return fromStorage;
+    } else {
+      fromRemote.$fresh = Q.get(this).resolve(false);
+      return fromRemote;
+    }
     return deferred.promise;
   }
 
-  static smartHttpFactory($http, $rootScope, $q) {
-    return new SmartHttp($http, $rootScope, $q);
+  static smartHttpFactory($http, $rootScope, $q, Storage) {
+    return new SmartHttp($http, $rootScope, $q, Storage);
   }
 }
 
