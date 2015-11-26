@@ -7,16 +7,72 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 })(this, function () {
   'use strict';
 
+  var prefix = 'SMHTTP_';
+  var expires = 5000;
+
+  var WINDOW = new WeakMap();
+
+  var Storage = (function () {
+    function Storage($window) {
+      _classCallCheck(this, Storage);
+
+      WINDOW.set(this, $window);
+    }
+
+    _createClass(Storage, [{
+      key: 'get',
+      value: function get(key) {
+        return JSON.parse(this.getString(key));
+      }
+    }, {
+      key: 'set',
+      value: function set(key, value) {
+        this.setString(key, JSON.stringify(value));
+      }
+    }, {
+      key: 'getString',
+      value: function getString(key) {
+        var now = new Date();
+        var entry = JSON.parse(WINDOW.get(this).localStorage.getItem(prefix + key));
+        console.log(now - new Date(entry.date));
+        if (now - new Date(entry.date) < expires) {
+          return entry.value;
+        } else {
+          //this.remove(key);
+          return null;
+        }
+      }
+    }, {
+      key: 'setString',
+      value: function setString(key, value) {
+        var now = new Date();
+        var entry = JSON.stringify({
+          date: new Date(),
+          value: value
+        });
+        WINDOW.get(this).localStorage.setItem(prefix + key, entry);
+      }
+    }], [{
+      key: 'storageFactory',
+      value: function storageFactory($window) {
+        return new Storage($window);
+      }
+    }]);
+
+    return Storage;
+  })();
+
   var HTTP = new WeakMap();
   var Q = new WeakMap();
+  var STORAGE = new WeakMap();
 
   var SmartHttp = (function () {
-    function SmartHttp($http, $q) {
+    function SmartHttp($http, $rootScope, $q, Storage) {
       _classCallCheck(this, SmartHttp);
 
       HTTP.set(this, $http);
       Q.set(this, $q);
-      this.trads = undefined;
+      STORAGE.set(this, Storage);
     }
 
     _createClass(SmartHttp, [{
@@ -24,21 +80,26 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function get(url) {
         var _this = this;
 
-        var deferred = Q.get(this).defer();
-        if (this.trads) {
-          deferred.resolve(this.trads);
+        var key = 'GET' + url;
+        var fromStorageSync = STORAGE.get(this).get(key);
+        var fromStorage = Q.get(this).resolve(fromStorageSync);
+        var fromRemote = HTTP.get(this).get(url).then(function (data) {
+          STORAGE.get(_this).set(key, data);
+        });
+
+        if (fromStorageSync == null) {
+          fromStorage.$fresh = fromRemote;
+          return fromStorage;
         } else {
-          HTTP.get(this).get(url).then(function (result) {
-            _this.trads = result.data;
-            deferred.resolve(result.data);
-          });
+          fromRemote.$fresh = Q.get(this).resolve(false);
+          return fromRemote;
         }
         return deferred.promise;
       }
     }], [{
       key: 'smartHttpFactory',
-      value: function smartHttpFactory($http, $q) {
-        return new SmartHttp($http, $q);
+      value: function smartHttpFactory($http, $rootScope, $q, Storage) {
+        return new SmartHttp($http, $rootScope, $q, Storage);
       }
     }]);
 
@@ -47,7 +108,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   var moduleName$1 = 'ngSmartHttp.services';
 
-  angular.module(moduleName$1, []).factory('SmartHttp', SmartHttp.smartHttpFactory);
+  angular.module(moduleName$1, []).factory('SmartHttp', SmartHttp.smartHttpFactory).factory('Storage', Storage.storageFactory);
 
   var moduleName = 'ngSmartHttp';
 
